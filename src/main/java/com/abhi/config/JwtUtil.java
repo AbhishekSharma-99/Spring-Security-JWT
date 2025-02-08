@@ -4,16 +4,20 @@ package com.abhi.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "9296f4cd3e0efc6f757f21f755576566aa957205b8a555c4aeb238266934d88a";
+    @Value("${jwt.secret}")
+    private static String SECRET_KEY;
     private static final SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
 
     private Claims extractClaims(String token){
@@ -30,7 +34,6 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token, String username){
         return extractUsername(token).equals(username) && !isTokenExpired(token);
-
     }
 
     private boolean isTokenExpired(String token) {
@@ -45,7 +48,10 @@ public class JwtUtil {
     private String createToken(Map<String, Object> claims, String username) {
         return Jwts
                 .builder()
+                .claims(claims)
                 .subject(username)
+                .header().empty().add("type", "JWT")
+                .and()
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
                 .signWith(key)
