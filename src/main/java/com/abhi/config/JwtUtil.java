@@ -4,6 +4,7 @@ package com.abhi.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,13 @@ import java.util.Map;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private static String SECRET_KEY;
-    private static final SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
+    private String SECRET_KEY;
+    private SecretKey key;
 
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
+    }
     private Claims extractClaims(String token){
         return Jwts.parser()
                 .verifyWith(key)
